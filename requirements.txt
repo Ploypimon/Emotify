@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+line-bot-sdk
+pandas
+sentence-transformers
+scikit-learn
+googletrans==4.0.0-rc1
+google-generativeai
