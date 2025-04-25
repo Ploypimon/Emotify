@@ -18,11 +18,20 @@ translator = Translator()
 df = pd.read_csv("https://drive.google.com/uc?export=download&id=1AGOUl8IVpajD1rJoEvXw5aO7OPVuzflz")
 
 # Mood list
-mood_list = [...]
+mood_list = ['romantic', 'happy', 'sad', 'cute', 'energetic', 'chill', 'angry', 'hopeful',
+             'melancholic', 'heartbroken', 'joyful', 'peaceful', 'uplifting', 'dark',
+             'relaxing', 'motivational', 'fun', 'lonely', 'calm', 'intense', 'dreamy',
+             'sexy', 'bittersweet', 'nostalgic', 'mysterious', 'playful',
+             'lofi', 'epic', 'party', 'emotional', 'cinematic', 'spiritual']
+
 mood_vecs = embedder.encode(mood_list)
 
 # Key Map
-key_map = {...}
+key_map = {
+    -1: "Unknown",
+    0: "C", 1: "C#/Db", 2: "D", 3: "D#/Eb", 4: "E", 5: "F",
+    6: "F#/Gb", 7: "G", 8: "G#/Ab", 9: "A", 10: "A#/Bb", 11: "B"
+}
 
 # ฟังก์ชันหลัก
 def is_thai(text):
