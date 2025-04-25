@@ -129,3 +129,74 @@ def recommend_song(text, df, seen_songs, limit=5):
             f"ฟังได้ที่: {song['spotify_url']}"
         )
     return result, seen_songs
+
+# ฟังก์ชันสำหรับขอเพลงตามอารมณ์ (เช่น รัก, เศร้า)
+def recommend_song_by_mood(mood_text, df, seen_songs, limit=5):
+    matched_mood, similarity = match_mood(mood_text)
+    encouragement = get_encouragement(matched_mood)
+
+    seen_keys = set((s['name'].lower(), s['artists'].lower()) for s in seen_songs)
+    sampled_keys = set()
+    songs_sampled = []
+    moods_to_try = [matched_mood] + find_similar_moods(matched_mood)
+
+    for mood in moods_to_try:
+        songs = df[df['mood'].str.lower() == mood.lower()].copy()
+        songs = songs[~songs.apply(lambda row: (row['name'].lower(), row['artists'].lower()) in seen_keys, axis=1)]
+        songs = songs[songs['name'].apply(is_thai_or_english)]  # กรองเพลงที่เป็นภาษาไทยหรืออังกฤษ
+
+        for _, row in songs.iterrows():
+            key = (row['name'].lower(), row['artists'].lower())
+            if key not in sampled_keys:
+                sampled_keys.add(key)
+                songs_sampled.append(row)
+                if len(songs_sampled) >= limit:
+                    break
+        if len(songs_sampled) >= limit:
+            break
+
+    if not songs_sampled:
+        return f"งืออ~ ไม่มีเพลงดีๆ เลย 🥺 แต่ยังมี Moosy อยู่ตรงนี้นะ~\n\n{encouragement}", seen_songs
+
+    seen_songs.extend([{'name': s['name'], 'artists': s['artists']} for s in songs_sampled])
+    result = f"\n🎧 Moosy เจอเพลงน่ารัก ๆ ให้แล้วน้า~\n{encouragement}"
+    for i, song in enumerate(songs_sampled, start=1):
+        result += (
+            f"\n\n🎵 เพลงที่ {i}:\n"
+            f"Name: {song['name']}\n"
+            f"Artist: {song['artists']}\n"
+            f"Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
+            f"ฟังได้ที่: {song['spotify_url']}"
+        )
+    return result, seen_songs
+
+# ฟังก์ชันขอเพลงที่ชื่อเป็นภาษาไทย
+def recommend_thai_songs(df, seen_songs, limit=5):
+    seen_keys = set((s['name'].lower(), s['artists'].lower()) for s in seen_songs)
+    sampled_keys = set()
+    songs_sampled = []
+
+    songs = df[df['name'].apply(is_thai)]  # กรองเพลงที่ชื่อเป็นภาษาไทยเท่านั้น
+
+    for _, row in songs.iterrows():
+        key = (row['name'].lower(), row['artists'].lower())
+        if key not in sampled_keys:
+            sampled_keys.add(key)
+            songs_sampled.append(row)
+            if len(songs_sampled) >= limit:
+                break
+
+    if not songs_sampled:
+        return "ไม่มีเพลงไทยที่เหมาะกับการแนะนำตอนนี้นะคะ", seen_songs
+
+    seen_songs.extend([{'name': s['name'], 'artists': s['artists']} for s in songs_sampled])
+    result = "\n🎧 Moosy เจอเพลงไทยที่น่ารักๆ มาแนะนำแล้วนะ~"
+    for i, song in enumerate(songs_sampled, start=1):
+        result += (
+            f"\n\n🎵 เพลงที่ {i}:\n"
+            f"Name: {song['name']}\n"
+            f"Artist: {song['artists']}\n"
+            f"Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
+            f"ฟังได้ที่: {song['spotify_url']}"
+        )
+    return result, seen_songs
