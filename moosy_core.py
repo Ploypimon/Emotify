@@ -135,7 +135,7 @@ def recommend_song(text, df, seen_songs, limit=5):
             f"🎶 Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
             f"🔗 ฟังได้ที่: {song['spotify_url']}\n"
         )
-    return result, seen_songs
+    #return result, seen_songs
 
 # ฟังก์ชันสำหรับขอเพลงตามอารมณ์ (เช่น รัก, เศร้า)
 def recommend_song_by_mood(mood_text, df, seen_songs, limit=5):
@@ -163,17 +163,17 @@ def recommend_song_by_mood(mood_text, df, seen_songs, limit=5):
             break
 
     if not songs_sampled:
-        return f"งืออ~ ไม่มีเพลงดีๆ เลย 🥺 แต่ยังมี Moosy อยู่ตรงนี้นะ~\n\n{encouragement} 🌸", seen_songs
+        return f"ไม่มีเพลงตามอารมณ์ที่คุณขอค่ะ แต่ยังมี Moosy อยู่ตรงนี้นะ~\n\n{encouragement}", seen_songs
 
     seen_songs.extend([{'name': s['name'], 'artists': s['artists']} for s in songs_sampled])
-    result = f"\n🎧 Moosy เจอเพลงน่ารัก ๆ ให้แล้วน้า~\n{encouragement} 🎶"
+    result = f"\n🎧 เพลงที่แนะนำตามอารมณ์ {matched_mood}:\n{encouragement}"
     for i, song in enumerate(songs_sampled, start=1):
         result += (
-            f"\n\n🎶 เพลงที่ {i}:\n"
-            f"🎵 Name: {song['name']}\n"
-            f"🎤 Artist: {song['artists']}\n"
-            f"🎶 Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
-            f"🔗 ฟังได้ที่: {song['spotify_url']}\n"
+            f"\n\n🎵 เพลงที่ {i}:\n"
+            f"Name: {song['name']}\n"
+            f"Artist: {song['artists']}\n"
+            f"Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
+            f"ฟังได้ที่: {song['spotify_url']}"
         )
     return result, seen_songs
 
@@ -197,13 +197,13 @@ def recommend_thai_songs(df, seen_songs, limit=5):
         return "ไม่มีเพลงไทยที่เหมาะกับการแนะนำตอนนี้นะคะ", seen_songs
 
     seen_songs.extend([{'name': s['name'], 'artists': s['artists']} for s in songs_sampled])
-    result = "\n🎧 Moosy เจอเพลงไทยที่น่ารักๆ มาแนะนำแล้วนะ~"
+    result = "\n🎧 เพลงไทยที่แนะนำ:\n"
     for i, song in enumerate(songs_sampled, start=1):
         result += (
-            f"\n\n🎶 เพลงที่ {i}:\n"
-            f"🎵 Name: {song['name']}\n"
-            f"🎤 Artist: {song['artists']}\n"
-            f"🎶 Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
-            f"🔗 ฟังได้ที่: {song['spotify_url']}\n"
+            f"\n\n🎵 เพลงที่ {i}:\n"
+            f"Name: {song['name']}\n"
+            f"Artist: {song['artists']}\n"
+            f"Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
+            f"ฟังได้ที่: {song['spotify_url']}"
         )
     return result, seen_songs
