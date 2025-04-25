@@ -15,7 +15,7 @@ embedder = SentenceTransformer('all-MiniLM-L6-v2')
 translator = Translator()
 
 # โหลดเพลง
-df = pd.read_csv("songs_with_mood.csv")
+df = pd.read_csv("https://drive.google.com/uc?export=download&id=1AGOUl8IVpajD1rJoEvXw5aO7OPVuzflz")
 
 # Mood list
 mood_list = [...]
