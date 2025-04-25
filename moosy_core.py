@@ -19,6 +19,7 @@ encouragement_cache = {}
 df = pd.read_csv("https://drive.google.com/uc?export=download&id=1AGOUl8IVpajD1rJoEvXw5aO7OPVuzflz")
 # ปรับชื่อคอลัมน์ให้สะอาด
 df.columns = df.columns.str.strip().str.lower()
+print("📋 Columns:", df.columns.tolist())
 
 # Mood list
 mood_list = ['romantic', 'happy', 'sad', 'cute', 'energetic', 'chill', 'angry', 'hopeful',
