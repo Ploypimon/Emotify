@@ -183,6 +183,7 @@ def recommend_thai_songs(df, seen_songs, limit=5):
     sampled_keys = set()
     songs_sampled = []
 
+    # กรองเพลงที่ชื่อเป็นภาษาไทยเท่านั้น
     songs = df[df['name'].apply(is_thai)]  # กรองเพลงที่ชื่อเป็นภาษาไทยเท่านั้น
 
     for _, row in songs.iterrows():
@@ -197,7 +198,7 @@ def recommend_thai_songs(df, seen_songs, limit=5):
         return "ไม่มีเพลงไทยที่เหมาะกับการแนะนำตอนนี้นะคะ", seen_songs
 
     seen_songs.extend([{'name': s['name'], 'artists': s['artists']} for s in songs_sampled])
-    result = "\n🎧 เพลงไทยที่แนะนำ:\n"
+    result = "\n🎧 เพลงไทยที่แนะนำค่ะ:"
     for i, song in enumerate(songs_sampled, start=1):
         result += (
             f"\n\n🎵 เพลงที่ {i}:\n"
