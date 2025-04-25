@@ -13,6 +13,7 @@ gemini = genai.GenerativeModel("gemini-1.5-pro-latest")
 # โหลดโมเดลฝังความหมาย
 embedder = SentenceTransformer('all-MiniLM-L6-v2')
 translator = Translator()
+encouragement_cache = {}
 
 # โหลดเพลง
 df = pd.read_csv("https://drive.google.com/uc?export=download&id=1AGOUl8IVpajD1rJoEvXw5aO7OPVuzflz")
