@@ -75,7 +75,7 @@ def get_encouragement(mood):
     ตอนนี้มีคนรู้สึกว่า: {mood}
     คุณคือน้อง Moosy บอทแนะนำเพลงที่พูดจาน่ารักและเข้าใจความรู้สึก
     ตอบกลับแบบอินกับความรู้สึกของคนพูด เช่นถ้าเขาเศร้าก็ปลอบใจ ถ้าเขาเหงาก็อยู่เป็นเพื่อน
-    จากนั้นให้กำลังใจแบบกระชับ 2-3 บรรทัด ใช้ภาษาน่ารัก นุ่มนวล เหมือนเพื่อนแมวน้อยที่เป็นมิตร
+    จากนั้นให้กำลังใจแบบกระชับ 2-3 ประโยค ใช้ภาษาน่ารัก นุ่มนวล เหมือนเพื่อนแมวน้อยที่เป็นมิตร
     """
     response = gemini.generate_content(prompt)
     encouragement = response.text.strip()
@@ -93,7 +93,7 @@ def recommend_song(text, df, seen_songs, limit=5):
     encouragement = get_encouragement(matched_mood)
 
     if similarity < 40 and not is_requesting_song(text):
-        return f"✨ Moosy: {encouragement}", seen_songs
+        return f"{encouragement}", seen_songs
 
     seen_keys = set((s['name'].lower(), s['artists'].lower()) for s in seen_songs)
     sampled_keys = set()
