@@ -135,7 +135,7 @@ def recommend_song(text, df, seen_songs, limit=5):
             f"🎶 Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
             f"🔗 ฟังได้ที่: {song['spotify_url']}\n"
         )
-    #return result, seen_songs
+    return result, seen_songs
 
 # ฟังก์ชันสำหรับขอเพลงตามอารมณ์ (เช่น รัก, เศร้า)
 def recommend_song_by_mood(mood_text, df, seen_songs, limit=5):
