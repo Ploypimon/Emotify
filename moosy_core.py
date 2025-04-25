@@ -16,7 +16,7 @@ translator = Translator()
 encouragement_cache = {}
 
 # โหลดเพลง
-df = pd.read_csv("https://drive.google.com/uc?export=download&id=1AGOUl8IVpajD1rJoEvXw5aO7OPVuzflz")
+df = pd.read_csv("cleaned_songs.csv")
 # ปรับชื่อคอลัมน์ให้สะอาด
 df.columns = df.columns.str.strip().str.lower()
 print("📋 Columns:", df.columns.tolist())
