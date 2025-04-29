@@ -1,8 +1,10 @@
-google-generativeai==0.8.5
-googletrans==4.0.0-rc1
 fastapi
-uvicorn
-line-bot-sdk
+mangum
 pandas
-sentence-transformers
 scikit-learn
+sentence-transformers
+line-bot-sdk
+google-generativeai
+googletrans==4.0.0-rc1
+python-dotenv
+uvicorn
