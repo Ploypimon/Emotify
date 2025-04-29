@@ -82,14 +82,10 @@ def get_encouragement(mood):
     ตอบกลับแบบอินกับความรู้สึกของคนพูด เช่น เศร้า เหงา สนุก ฯลฯ
     ตอบให้กำลังใจสั้นๆ แบบแมวน้อยใจดี เพื่อนที่แสนดีของมนุษย์ ไม่แนะนำเพลงลงไป
     """
-    try:
-        response = gemini.generate_content(prompt)
-        encouragement = f"✨ {response.text.strip()} ✨"
-    except Exception as e:
-        encouragement = "✨ ขอเป็นกำลังใจให้จากใจ moosy นะคะ ✨"
+    response = gemini.generate_content(prompt)
+    encouragement = f"✨ {response.text.strip()} ✨"
     encouragement_cache[mood] = encouragement
     return encouragement
-
 
 def find_similar_moods(current_mood, top_n=3):
     idx = mood_list.index(current_mood)
@@ -117,17 +113,17 @@ def recommend_by_mood(text, seen_songs, limit=5):
             break
 
     if not songs:
-        return f"ไม่มีเพลงแบบนั้นเลยง่ะ moosy ขอโทษนะ 🥹\n\n{encouragement}"
+        return f"ไม่มีเพลง mood {mood} เลยง่ะ moosy ขอโทษน๊าา 🥹\n\n{encouragement}"
 
     seen_songs.extend({'name': s[1], 'artists': s[2]} for s in songs)
     result = f"\n🎧 รู้สึก {mood} อยู่หรอ เอาเพลงนี้ไปนะ~ ❤️:\n{encouragement}"
     for i, s in enumerate(songs, 1):
         result += (
-            f"\n\n🎵 เพลงที่ {i}:\n"
-            f"Name: {s[1]}\n"
-            f"Artist: {s[2]}\n"
-            f"Key: {key_map.get(s[10], 'Unknown')}, Tempo: {s[16]} BPM\n"
-            f"ฟังได้ที่: {s[17]}"
+            f"\n\n😽 เพลงที่ {i}:\n"
+            f"🌻 Name: {s[1]}\n"
+            f"🎤 Artist: {s[2]}\n"
+            f"🎹 Key: {key_map.get(s[10], 'Unknown')},🎼 Tempo: {s[16]} BPM\n"
+            f"🎧 ฟังได้ที่: {s[17]}"
         )
     return result
 
@@ -137,17 +133,17 @@ def recommend_by_artist(artist, seen_songs, limit=5):
     recommended = recommend_songs(songs, seen_songs, limit)
 
     if not recommended:
-        return f"ไม่มีเพลงของ {artist} เลยง่าา ขอโทษด้วยนะคะ 😭"
+        return f"ไม่มีเพลงของ {artist} แต่ยังมี moosy อยู่ตรงนี้น้าา 🌈"
 
     seen_songs.extend({'name': s[1], 'artists': s[2]} for s in recommended)
-    result = f"\n🎧 เพลงของ {artist} ที่แนะนำค้าบบบ:"
+    result = f"\n🎧 เพลงของ {artist} ที่แนะนำค้าบบบ✨:"
     for i, s in enumerate(recommended, 1):
         result += (
-            f"\n\n🎵 เพลงที่ {i}:\n"
-            f"Name: {s[1]}\n"
-            f"Artist: {s[2]}\n"
-            f"Key: {key_map.get(s[10], 'Unknown')}, Tempo: {s[16]} BPM\n"
-            f"ฟังได้ที่: {s[17]}"
+            f"\n\n😽 เพลงที่ {i}:\n"
+            f"🌻 Name: {s[1]}\n"
+            f"🎤 Artist: {s[2]}\n"
+            f"🎹 Key: {key_map.get(s[10], 'Unknown')},🎼 Tempo: {s[16]} BPM\n"
+            f"🎧 ฟังได้ที่: {s[17]}"
         )
     return result
 
@@ -159,13 +155,13 @@ def recommend_thai(seen_songs, limit=5):
         return "ไม่มีเพลงไทยแล้วงับ แต่ยังมี moosy อยู่ตรงนี้น้าา💕"
 
     seen_songs.extend({'name': s[1], 'artists': s[2]} for s in recommended)
-    result = "\n🎧 เพลงไทยดีๆ ที่ moosy แนะนำนะ:"
+    result = "\n🎧 เพลงไทยดีๆ ที่ moosy แนะนำนะ❤️:"
     for i, s in enumerate(recommended, 1):
         result += (
-            f"\n\n🎵 เพลงที่ {i}:\n"
-            f"Name: {s[1]}\n"
-            f"Artist: {s[2]}\n"
-            f"Key: {key_map.get(s[10], 'Unknown')}, Tempo: {s[16]} BPM\n"
-            f"ฟังได้ที่: {s[17]}"
+            f"\n\n😽 เพลงที่ {i}:\n"
+            f"🌻 Name: {s[1]}\n"
+            f"🎤 Artist: {s[2]}\n"
+            f"🎹 Key: {key_map.get(s[10], 'Unknown')},🎼 Tempo: {s[16]} BPM\n"
+            f"🎧 ฟังได้ที่: {s[17]}"
         )
     return result
