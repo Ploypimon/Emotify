@@ -102,7 +102,7 @@ def recommend_by_mood(text, seen_songs, limit=5):
         return f"ไม่มีเพลง mood {mood} เลยง่ะ moosy ขอโทษน๊าา 🥹\n\n{encouragement}"
 
     seen_songs.extend({'name': s[1], 'artists': s[2]} for s in songs)
-    result = f"\n🎧 รู้สึก {mood} อยู่หรอ เอาเพลงนี้ไปนะ~ ❤️:\n{encouragement}"
+    result = f"🎧 รู้สึก {mood} อยู่หรอ เอาเพลงนี้ไปนะ~ ❤️:\n{encouragement}"
     for i, s in enumerate(songs, 1):
         result += (
             f"\n\n😽 เพลงที่ {i}:\n"
@@ -122,7 +122,7 @@ def recommend_by_artist(artist, seen_songs, limit=5):
         return f"ไม่มีเพลงของ {artist} แต่ยังมี moosy อยู่ตรงนี้น้าา 🌈"
 
     seen_songs.extend({'name': s[1], 'artists': s[2]} for s in recommended)
-    result = f"\n🎧 เพลงของ {artist} ที่แนะนำค้าบบบ✨:"
+    result = f"🎧 เพลงของ {artist} ที่แนะนำค้าบบบ✨:"
     for i, s in enumerate(recommended, 1):
         result += (
             f"\n\n😽 เพลงที่ {i}:\n"
@@ -141,7 +141,7 @@ def recommend_thai(seen_songs, limit=5):
         return "ไม่มีเพลงไทยแล้วงับ แต่ยังมี moosy อยู่ตรงนี้น้าา💕"
 
     seen_songs.extend({'name': s[1], 'artists': s[2]} for s in recommended)
-    result = "\n🎧 เพลงไทยดีๆ ที่ moosy แนะนำนะ❤️:"
+    result = "🎧 เพลงไทยดีๆ ที่ moosy แนะนำนะ❤️:"
     for i, s in enumerate(recommended, 1):
         result += (
             f"\n\n😽 เพลงที่ {i}:\n"
