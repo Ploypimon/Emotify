@@ -69,7 +69,7 @@ def get_encouragement(mood):
     ตอบให้กำลังใจสั้นๆ แบบแมวน้อยใจดี เพื่อนที่แสนดีของมนุษย์ ไม่แนะนำเพลงลงไป
     """
     response = genai.generate_text(prompt)
-    encouragement = f"✨ {response.text.strip()} ✨"
+    encouragement = f"✨ {response['text'].strip()} ✨"
     encouragement_cache[mood] = encouragement
     return encouragement
 
