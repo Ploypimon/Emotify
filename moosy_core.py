@@ -68,10 +68,11 @@ def get_encouragement(mood):
     ตอบกลับแบบอินกับความรู้สึกของคนพูด เช่น เศร้า เหงา สนุก ฯลฯ
     ตอบให้กำลังใจสั้นๆ แบบแมวน้อยใจดี เพื่อนที่แสนดีของมนุษย์ ไม่แนะนำเพลงลงไป
     """
-    response = gemini.generate_content(prompt)
+    response = genai.generate_text(prompt)
     encouragement = f"✨ {response.text.strip()} ✨"
     encouragement_cache[mood] = encouragement
     return encouragement
+
 
 def find_similar_moods(current_mood, top_n=3):
     idx = mood_list.index(current_mood)
