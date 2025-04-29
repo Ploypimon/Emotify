@@ -73,7 +73,9 @@ def get_encouragement(mood):
         response = genai.generate_content(prompt) 
         encouragement = f"✨ {response.text.strip()} ✨"
     except Exception as e:
-        encouragement = "✨ ขอเป็นกำลังใจให้จากใจ moosy นะคะ ✨"
+        print(f"Error occurred: {e}")
+        encouragement = "moosy เป็นกำลังใจให้นะคะ ✨"
+
     
     encouragement_cache[mood] = encouragement
     return encouragement
