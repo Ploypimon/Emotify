@@ -1,10 +1,13 @@
-from sentence_transformers import SentenceTransformer
-from sklearn.metrics.pairwise import cosine_similarity
 import random
+import re
+import os
+import pandas as pd
 from googletrans import Translator
 import google.generativeai as genai
-import pandas as pd
-import os
+from sentence_transformers import SentenceTransformer
+from sklearn.metrics.pairwise import cosine_similarity
+from googletrans import Translator
+
 
 # --- Setup ---
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
@@ -13,23 +16,6 @@ translator = Translator()
 
 # --- Load Dataset ---
 df = pd.read_csv("songs_with_mood.csv")
-
-mood_list = [
-    'romantic', 'happy', 'sad', 'cute', 'energetic', 'chill', 'angry', 'hopeful',
-    'melancholic', 'heartbroken', 'joyful', 'peaceful', 'uplifting', 'dark',
-    'relaxing', 'motivational', 'fun', 'lonely', 'calm', 'intense', 'dreamy',
-    'sexy', 'bittersweet', 'nostalgic', 'mysterious', 'playful',
-    'lofi', 'epic', 'party', 'emotional', 'cinematic', 'spiritual'
-]
-mood_vecs = embedder.encode(mood_list)
-
-encouragement_cache = {}
-seen_songs = []
-
-key_map = {
-    -1: "Unknown", 0: "C", 1: "C#/Db", 2: "D", 3: "D#/Eb", 4: "E", 5: "F",
-    6: "F#/Gb", 7: "G", 8: "G#/Ab", 9: "A", 10: "A#/Bb", 11: "B"
-}
 
 # --- Helper Functions ---
 mood_list = [
