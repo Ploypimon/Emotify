@@ -2,11 +2,12 @@ from fastapi import FastAPI, Request
 from linebot import LineBotApi
 from linebot.models import TextSendMessage
 from moosy_core import recommend_by_artist, recommend_by_mood, recommend_thai
+import os
 
 app = FastAPI()
 
 # --- LINE Bot API Setup ---
-LINE_CHANNEL_ACCESS_TOKEN = "YOUR_LINE_CHANNEL_ACCESS_TOKEN"
+LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 
 @app.post("/webhook")
