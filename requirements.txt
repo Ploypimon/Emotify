@@ -1,8 +1,9 @@
 fastapi
-uvicorn
-line-bot-sdk
+mangum
 pandas
-sentence-transformers
 scikit-learn
-googletrans==4.0.0-rc1
+sentence-transformers
+line-bot-sdk
 google-generativeai
+googletrans==4.0.0-rc1
+python-dotenv

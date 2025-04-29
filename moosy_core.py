@@ -1,72 +1,75 @@
-import pandas as pd
-import re
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+import random
 from googletrans import Translator
 import google.generativeai as genai
+import pandas as pd
 import os
 
-# เรียกใช้ Gemini
+# --- Setup ---
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-gemini = genai.GenerativeModel("gemini-1.5-pro-latest")
-
-# โหลดโมเดลฝังความหมาย
 embedder = SentenceTransformer('all-MiniLM-L6-v2')
 translator = Translator()
-encouragement_cache = {}
 
-# โหลดเพลง
-df = pd.read_csv("cleaned_songs.csv")
-# ปรับชื่อคอลัมน์ให้สะอาด
-df.columns = df.columns.str.strip().str.lower()
-print("📋 Columns:", df.columns.tolist())
+# --- Load Dataset ---
+df = pd.read_csv("songs_with_mood.csv")
 
-# Mood list
-mood_list = ['romantic', 'happy', 'sad', 'cute', 'energetic', 'chill', 'angry', 'hopeful',
-             'melancholic', 'heartbroken', 'joyful', 'peaceful', 'uplifting', 'dark',
-             'relaxing', 'motivational', 'fun', 'lonely', 'calm', 'intense', 'dreamy',
-             'sexy', 'bittersweet', 'nostalgic', 'mysterious', 'playful',
-             'lofi', 'epic', 'party', 'emotional', 'cinematic', 'spiritual']
-
+mood_list = [
+    'romantic', 'happy', 'sad', 'cute', 'energetic', 'chill', 'angry', 'hopeful',
+    'melancholic', 'heartbroken', 'joyful', 'peaceful', 'uplifting', 'dark',
+    'relaxing', 'motivational', 'fun', 'lonely', 'calm', 'intense', 'dreamy',
+    'sexy', 'bittersweet', 'nostalgic', 'mysterious', 'playful',
+    'lofi', 'epic', 'party', 'emotional', 'cinematic', 'spiritual'
+]
 mood_vecs = embedder.encode(mood_list)
 
-# Key Map
+encouragement_cache = {}
+seen_songs = []
+
 key_map = {
-    -1: "Unknown",
-    0: "C", 1: "C#/Db", 2: "D", 3: "D#/Eb", 4: "E", 5: "F",
+    -1: "Unknown", 0: "C", 1: "C#/Db", 2: "D", 3: "D#/Eb", 4: "E", 5: "F",
     6: "F#/Gb", 7: "G", 8: "G#/Ab", 9: "A", 10: "A#/Bb", 11: "B"
 }
 
-# ฟังก์ชันหลัก
-# ฟังก์ชันหลัก
+# --- Helper Functions ---
+mood_list = [
+    'romantic', 'happy', 'sad', 'cute', 'energetic', 'chill', 'angry', 'hopeful',
+    'melancholic', 'heartbroken', 'joyful', 'peaceful', 'uplifting', 'dark',
+    'relaxing', 'motivational', 'fun', 'lonely', 'calm', 'intense', 'dreamy',
+    'sexy', 'bittersweet', 'nostalgic', 'mysterious', 'playful',
+    'lofi', 'epic', 'party', 'emotional', 'cinematic', 'spiritual'
+]
+mood_vecs = embedder.encode(mood_list)
+encouragement_cache = {}
+seen_songs = []
+key_map = {
+    -1: "Unknown", 0: "C", 1: "C#/Db", 2: "D", 3: "D#/Eb", 4: "E", 5: "F",
+    6: "F#/Gb", 7: "G", 8: "G#/Ab", 9: "A", 10: "A#/Bb", 11: "B"
+}
+
+# --- Helper Functions ---
 def is_thai(text):
-    return bool(re.search(r'[\u0E00-\u0E7F]', text))
+    return isinstance(text, str) and bool(re.search(r'[\u0E00-\u0E7F]', text))
 
 def is_thai_or_english(text):
-    return bool(re.match(r'^[\u0E00-\u0E7Fa-zA-Z0-9\s\-\_\'\\"\.\,\!\?]+$', text))
+    return isinstance(text, str) and bool(re.match(r'^[\u0E00-\u0E7Fa-zA-Z0-9\s\-\_\'\"\.,!?]+$', text))
 
-def is_thank_you(text):
-    return "ขอบคุณ" in text.lower() or "thank" in text.lower()
-
-def is_requesting_song(text):
-    keywords = ["เพลง", "music", "แนะนำ", "เปิดเพลง", "song", "recommend", "ขอเพลง"]
-    return any(kw in text.lower() for kw in keywords)
+def safe_lower(value):
+    return str(value).lower()
 
 def translate_to_english(text):
     try:
         result = translator.translate(text, src='th', dest='en')
         return result.text
-    except:
+    except Exception:
         return text
 
 def match_mood(text):
-    global last_mood
     if is_thai(text):
         text = translate_to_english(text)
     vec = embedder.encode([text])
     sims = cosine_similarity(vec, mood_vecs)[0]
     best_idx = sims.argmax()
-    last_mood = mood_list[best_idx]
     return mood_list[best_idx], sims[best_idx] * 100
 
 def get_encouragement(mood):
@@ -76,17 +79,17 @@ def get_encouragement(mood):
     prompt = f"""
     ตอนนี้มีคนรู้สึกว่า: {mood}
     คุณคือน้อง Moosy บอทแนะนำเพลงที่พูดจาน่ารักและเข้าใจความรู้สึก
-    ตอบกลับแบบอินกับความรู้สึกของคนพูด เช่นถ้าเขาเศร้าก็ปลอบใจ ถ้าเขาเหงาก็อยู่เป็นเพื่อน
-    จากนั้นให้กำลังใจแบบกระชับ 1 ประโยค ใช้ภาษาน่ารัก นุ่มนวล เหมือนเพื่อนแมวน้อยที่เป็นมิตร
+    ตอบกลับแบบอินกับความรู้สึกของคนพูด เช่น เศร้า เหงา สนุก ฯลฯ
+    ตอบให้กำลังใจสั้นๆ แบบแมวน้อยใจดี เพื่อนที่แสนดีของมนุษย์ ไม่แนะนำเพลงลงไป
     """
-    response = gemini.generate_content(prompt)
-    encouragement = response.text.strip()
+    try:
+        response = gemini.generate_content(prompt)
+        encouragement = f"✨ {response.text.strip()} ✨"
+    except Exception as e:
+        encouragement = "✨ ขอเป็นกำลังใจให้จากใจ moosy นะคะ ✨"
     encouragement_cache[mood] = encouragement
-
-    # เพิ่มอิโมจิให้กำลังใจ
-    encouragement = f"✨ {encouragement} ✨"
-
     return encouragement
+
 
 def find_similar_moods(current_mood, top_n=3):
     idx = mood_list.index(current_mood)
@@ -95,116 +98,74 @@ def find_similar_moods(current_mood, top_n=3):
     similar_idxs = sims.argsort()[::-1]
     return [mood_list[i] for i in similar_idxs if mood_list[i] != current_mood][:top_n]
 
-def recommend_song(text, df, seen_songs, limit=5):
-    matched_mood, similarity = match_mood(text)
-    encouragement = get_encouragement(matched_mood)
+def recommend_songs(df_subset, seen_songs, limit=5):
+    seen_keys = set((safe_lower(s['name']), safe_lower(s['artists'])) for s in seen_songs)
+    available_songs = [s for s in df_subset.itertuples(index=False, name=None)
+                       if (safe_lower(s[1]), safe_lower(s[2])) not in seen_keys and is_thai_or_english(s[1])]
+    return random.sample(available_songs, min(limit, len(available_songs)))
 
-    if similarity < 40 and not is_requesting_song(text):
-        return f"😺 {encouragement} 💖", seen_songs
+def recommend_by_mood(text, seen_songs, limit=5):
+    mood, _ = match_mood(text)
+    encouragement = get_encouragement(mood)
 
-    seen_keys = set((s['name'].lower(), s['artists'].lower()) for s in seen_songs)
-    sampled_keys = set()
-    songs_sampled = []
-    moods_to_try = [matched_mood] + find_similar_moods(matched_mood)
-
-    for mood in moods_to_try:
-        songs = df[df['mood'].str.lower() == mood.lower()].copy()
-        songs = songs[~songs.apply(lambda row: (row['name'].lower(), row['artists'].lower()) in seen_keys, axis=1)]
-        songs = songs[songs['name'].apply(is_thai_or_english)]  # กรองเพลงที่เป็นภาษาไทยหรืออังกฤษ
-
-        for _, row in songs.iterrows():
-            key = (row['name'].lower(), row['artists'].lower())
-            if key not in sampled_keys:
-                sampled_keys.add(key)
-                songs_sampled.append(row)
-                if len(songs_sampled) >= limit:
-                    break
-        if len(songs_sampled) >= limit:
+    moods_to_try = [mood] + find_similar_moods(mood, top_n=5)
+    songs = []
+    for mood_try in moods_to_try:
+        candidates = df[df['mood'].str.lower() == mood_try.lower()]
+        songs += recommend_songs(candidates, seen_songs, limit - len(songs))
+        if len(songs) >= limit:
             break
 
-    if not songs_sampled:
-        return f"งืออ~ ไม่มีเพลงดีๆ เลย 🥺 แต่ยังมี Moosy อยู่ตรงนี้นะ~\n\n{encouragement} 🌸", seen_songs
+    if not songs:
+        return f"ไม่มีเพลงแบบนั้นเลยง่ะ moosy ขอโทษนะ 🥹\n\n{encouragement}"
 
-    seen_songs.extend([{'name': s['name'], 'artists': s['artists']} for s in songs_sampled])
-    result = f"\n🎧 Moosy เจอเพลงน่ารัก ๆ ให้แล้วน้า~\n{encouragement} 🎵"
-    for i, song in enumerate(songs_sampled, start=1):
-        result += (
-            f"\n\n🎶 เพลงที่ {i}:\n"
-            f"🎵 Name: {song['name']}\n"
-            f"🎤 Artist: {song['artists']}\n"
-            f"🎶 Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
-            f"🔗 ฟังได้ที่: {song['spotify_url']}\n"
-        )
-    return result, seen_songs
-
-# ฟังก์ชันสำหรับขอเพลงตามอารมณ์ (เช่น รัก, เศร้า)
-def recommend_song_by_mood(mood_text, df, seen_songs, limit=5):
-    matched_mood, similarity = match_mood(mood_text)
-    encouragement = get_encouragement(matched_mood)
-
-    seen_keys = set((s['name'].lower(), s['artists'].lower()) for s in seen_songs)
-    sampled_keys = set()
-    songs_sampled = []
-    moods_to_try = [matched_mood] + find_similar_moods(matched_mood)
-
-    for mood in moods_to_try:
-        songs = df[df['mood'].str.lower() == mood.lower()].copy()
-        songs = songs[~songs.apply(lambda row: (row['name'].lower(), row['artists'].lower()) in seen_keys, axis=1)]
-        songs = songs[songs['name'].apply(is_thai_or_english)]  # กรองเพลงที่เป็นภาษาไทยหรืออังกฤษ
-
-        for _, row in songs.iterrows():
-            key = (row['name'].lower(), row['artists'].lower())
-            if key not in sampled_keys:
-                sampled_keys.add(key)
-                songs_sampled.append(row)
-                if len(songs_sampled) >= limit:
-                    break
-        if len(songs_sampled) >= limit:
-            break
-
-    if not songs_sampled:
-        return f"ไม่มีเพลงตามอารมณ์ที่คุณขอค่ะ แต่ยังมี Moosy อยู่ตรงนี้นะ~\n\n{encouragement}", seen_songs
-
-    seen_songs.extend([{'name': s['name'], 'artists': s['artists']} for s in songs_sampled])
-    result = f"\n🎧 เพลงที่แนะนำตามอารมณ์ {matched_mood}:\n{encouragement}"
-    for i, song in enumerate(songs_sampled, start=1):
+    seen_songs.extend({'name': s[1], 'artists': s[2]} for s in songs)
+    result = f"\n🎧 รู้สึก {mood} อยู่หรอ เอาเพลงนี้ไปนะ~ ❤️:\n{encouragement}"
+    for i, s in enumerate(songs, 1):
         result += (
             f"\n\n🎵 เพลงที่ {i}:\n"
-            f"Name: {song['name']}\n"
-            f"Artist: {song['artists']}\n"
-            f"Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
-            f"ฟังได้ที่: {song['spotify_url']}"
+            f"Name: {s[1]}\n"
+            f"Artist: {s[2]}\n"
+            f"Key: {key_map.get(s[10], 'Unknown')}, Tempo: {s[16]} BPM\n"
+            f"ฟังได้ที่: {s[17]}"
         )
-    return result, seen_songs
+    return result
 
-# ฟังก์ชันขอเพลงที่ชื่อเป็นภาษาไทย
-def recommend_thai_songs(df, seen_songs, limit=5):
-    seen_keys = set((s['name'].lower(), s['artists'].lower()) for s in seen_songs)
-    sampled_keys = set()
-    songs_sampled = []
+def recommend_by_artist(artist, seen_songs, limit=5):
+    artist = safe_lower(artist)
+    songs = df[df['artists'].notna() & df['artists'].str.lower().str.contains(artist)]
+    recommended = recommend_songs(songs, seen_songs, limit)
 
-    # กรองเพลงที่ชื่อเป็นภาษาไทยเท่านั้น
-    songs = df[df['name'].apply(is_thai)]  # กรองเพลงที่ชื่อเป็นภาษาไทยเท่านั้น
+    if not recommended:
+        return f"ไม่มีเพลงของ {artist} เลยง่าา ขอโทษด้วยนะคะ 😭"
 
-    for _, row in songs.iterrows():
-        key = (row['name'].lower(), row['artists'].lower())
-        if key not in sampled_keys:
-            sampled_keys.add(key)
-            songs_sampled.append(row)
-            if len(songs_sampled) >= limit:
-                break
-
-    if not songs_sampled:
-        return "ไม่มีเพลงไทยที่เหมาะกับการแนะนำตอนนี้นะคะ", seen_songs
-
-    seen_songs.extend([{'name': s['name'], 'artists': s['artists']} for s in songs_sampled])
-    result = "\n🎧 เพลงไทยที่แนะนำค่ะ:"
-    for i, song in enumerate(songs_sampled, start=1):
+    seen_songs.extend({'name': s[1], 'artists': s[2]} for s in recommended)
+    result = f"\n🎧 เพลงของ {artist} ที่แนะนำค้าบบบ:"
+    for i, s in enumerate(recommended, 1):
         result += (
             f"\n\n🎵 เพลงที่ {i}:\n"
-            f"Name: {song['name']}\n"
-            f"Artist: {song['artists']}\n"
-            f"Key: {key_map.get(song['key'], 'Unknown')}, Tempo: {song['tempo']} BPM\n"
-            f"ฟังได้ที่: {song['spotify_url']}"
+            f"Name: {s[1]}\n"
+            f"Artist: {s[2]}\n"
+            f"Key: {key_map.get(s[10], 'Unknown')}, Tempo: {s[16]} BPM\n"
+            f"ฟังได้ที่: {s[17]}"
         )
-    return result, seen_songs
+    return result
+
+def recommend_thai(seen_songs, limit=5):
+    songs = df[df['name'].apply(is_thai)]
+    recommended = recommend_songs(songs, seen_songs, limit)
+
+    if not recommended:
+        return "ไม่มีเพลงไทยแล้วงับ แต่ยังมี moosy อยู่ตรงนี้น้าา💕"
+
+    seen_songs.extend({'name': s[1], 'artists': s[2]} for s in recommended)
+    result = "\n🎧 เพลงไทยดีๆ ที่ moosy แนะนำนะ:"
+    for i, s in enumerate(recommended, 1):
+        result += (
+            f"\n\n🎵 เพลงที่ {i}:\n"
+            f"Name: {s[1]}\n"
+            f"Artist: {s[2]}\n"
+            f"Key: {key_map.get(s[10], 'Unknown')}, Tempo: {s[16]} BPM\n"
+            f"ฟังได้ที่: {s[17]}"
+        )
+    return result

@@ -1,51 +1,41 @@
-from fastapi import FastAPI, Request, HTTPException
-from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
-import os
+from fastapi import FastAPI, Request
+from linebot import LineBotApi
+from linebot.models import TextSendMessage
+from moosy_core import recommend_by_artist, recommend_by_mood, recommend_thai, recommend_song
 
-# 👇 import core จากไฟล์ moosy_core.py
-from moosy_core import recommend_song, df
-
-# 📌 โหลดค่า ENV (จาก Render / Secrets)
-LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
-LINE_CHANNEL_SECRET = os.getenv("LINE_CHANNEL_SECRET")
-
-# ✅ LINE SDK setup
-line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
-handler = WebhookHandler(LINE_CHANNEL_SECRET)
-
-# ✅ FastAPI app
 app = FastAPI()
 
-# 🏠 root endpoint
-@app.get("/")
-def read_root():
-    return {"message": "Moosy LINE Bot is alive!"}
+# --- LINE Bot API Setup ---
+LINE_CHANNEL_ACCESS_TOKEN = "YOUR_LINE_CHANNEL_ACCESS_TOKEN"
+line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 
-# 📬 LINE Webhook
-@app.post("/callback")
-async def callback(request: Request):
-    signature = request.headers.get("X-Line-Signature")
-    body = await request.body()
+@app.post("/webhook")
+async def webhook(req: Request):
+    body = await req.json()
+    events = body.get("events", [])
 
-    try:
-        handler.handle(body.decode("utf-8"), signature)
-    except InvalidSignatureError:
-        raise HTTPException(status_code=400, detail="Invalid signature")
+    for event in events:
+        if event["type"] == "message" and event["message"]["type"] == "text":
+            user_message = event["message"]["text"]
+            reply_token = event["replyToken"]
 
-    return "OK"
+            if "ขอเพลงของ" in user_message:
+                artist = user_message.split("ขอเพลงของ")[-1].strip()
+                reply_text = recommend_by_artist(artist, [])
 
-# 💬 Handle incoming text messages from user
-@handler.add(MessageEvent, message=TextMessage)
-def handle_message(event):
-    user_input = event.message.text
+            elif "ขอเพลงไทย" in user_message.lower():
+                reply_text = recommend_thai([])
 
-    # เรียก Moosy core มาใช้งาน
-    response_text, _ = recommend_song(user_input, df, seen_songs=[])
-    
-    # ตอบกลับผ่าน LINE
-    line_bot_api.reply_message(
-        event.reply_token,
-        TextSendMessage(text=response_text)
-    )
+            else:
+                reply_text = recommend_by_mood(user_message, [])
+
+            line_bot_api.reply_message(
+                reply_token,
+                TextSendMessage(text=reply_text)
+            )
+
+    return {"status": "ok"}
+
+# --- Lambda Handler ---
+from mangum import Mangum
+handler = Mangum(app)
