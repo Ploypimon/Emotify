@@ -112,7 +112,7 @@ def recommend_by_mood(text, seen_songs, limit=5):
         return f"ไม่มีเพลง {mood} เลยง่ะ moosy ขอโทษน๊าา 🥹\n\n{encouragement}"
 
     seen_songs.extend({'name': s[1], 'artists': s[2]} for s in songs)
-    result = f"{encouragement}\nรู้สึก {mood} อยู่หรอ เอาเพลงนี้ไปนะ~ ❤️"
+    result = f"{encouragement}\nรู้สึกแบบนี้ เอาเพลงนี้ไปเล๊ยยยย~ ❤️"
     for i, s in enumerate(songs, 1):
         result += (
             f"\n\n😽 เพลงที่ {i}:\n"

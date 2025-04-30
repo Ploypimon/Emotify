@@ -27,7 +27,7 @@ async def webhook(req: Request):
             elif "ขอเพลงไทย" in user_message.lower():
                 reply_text = recommend_thai([], limit=5)
 
-            elif any(kw in user_message.lower() for kw in ["ขอเพลง", "แนะนำเพลง", "ขอเพลงแนว", "ขอเพลงรัก"]):
+            elif any(kw in user_message.lower() for kw in ["ขอเพลง", "แนะนำเพลง", "ขอเพลงแนว"]):
                 reply_text = recommend_by_mood(user_message, [], limit=5)
 
             else:
