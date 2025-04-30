@@ -9,7 +9,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from googletrans import Translator
 
 
-# --- Setup ---
+# --- Connect Gemini ---
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 gemini = genai.GenerativeModel("gemini-1.5-pro-latest")
 
@@ -19,7 +19,6 @@ translator = Translator()
 # --- Load Dataset ---
 df = pd.read_csv("songs_with_mood.csv")
 
-# --- Helper Functions ---
 mood_list = [
     'romantic', 'happy', 'sad', 'cute', 'energetic', 'chill', 'angry', 'hopeful',
     'melancholic', 'heartbroken', 'joyful', 'peaceful', 'uplifting', 'dark',
@@ -68,7 +67,7 @@ def get_encouragement(mood):
     ตอนนี้มีคนรู้สึกว่า: {mood}
     คุณคือน้อง Moosy บอทแนะนำเพลงที่พูดจาน่ารักและเข้าใจความรู้สึก
     ตอบกลับแบบอินกับความรู้สึกของคนพูด เช่น เศร้า เหงา สนุก ฯลฯ
-    ตอบให้กำลังใจแบบสั้นๆ เป็นแมวส้มใจดี เพื่อนที่แสนดีของมนุษย์ ไม่แนะนำเพลงลงไป
+    ตอบให้กำลังใจไม่ต้องยาวมาก ด้วยประโยคที่หลากหลาย สุดจึ้ง เป็นน้องแมวใจดี เพื่อนที่แสนดีของมนุษย์ และไม่แนะนำเพลงลงไปนะ
     """
 
     try:
@@ -76,7 +75,7 @@ def get_encouragement(mood):
         encouragement = f"✨ {response.text.strip()} ✨"
     except Exception as e:
         print(f"Error occurred: {e}")
-        encouragement = "✨moosy เป็นกำลังใจให้นะคะ ✨"
+        encouragement = "\n✨ moosy เป็นกำลังใจให้นะคะ ✨"
 
     encouragement_cache[mood] = encouragement
     return encouragement
@@ -95,15 +94,12 @@ def recommend_songs(df_subset, seen_songs, limit=5):
     return random.sample(available_songs, min(limit, len(available_songs)))
 
 def recommend_by_mood(text, seen_songs, limit=5):
-    # ตรวจสอบว่าแมทช์กับอารมณ์ใด
     mood, similarity = match_mood(text)
     encouragement = get_encouragement(mood)
 
-    # ถ้า similarity น้อยกว่า 40% จะไม่แนะนำเพลง แต่จะส่งกำลังใจ
     if similarity < 40:
-        return f"รู้สึก {mood} ใช่ไหม? อย่ากังวลนะ moosy อยู่ข้างๆ น้า~ 💖\n\n{encouragement}"
+        return f"รู้สึก {mood} อยู่หรอ {encouragement}"
 
-    # ถ้าแมทช์กับอารมณ์ได้ดี จะแนะนำเพลงตามอารมณ์
     moods_to_try = [mood] + find_similar_moods(mood, top_n=5)
     songs = []
     for mood_try in moods_to_try:
@@ -113,10 +109,10 @@ def recommend_by_mood(text, seen_songs, limit=5):
             break
 
     if not songs:
-        return f"ไม่มีเพลง mood {mood} เลยง่ะ moosy ขอโทษน๊าา 🥹\n\n{encouragement}"
+        return f"ไม่มีเพลง {mood} เลยง่ะ moosy ขอโทษน๊าา 🥹\n\n{encouragement}"
 
     seen_songs.extend({'name': s[1], 'artists': s[2]} for s in songs)
-    result = f"รู้สึก {mood} อยู่หรอ เอาเพลงนี้ไปนะ~ ❤️:\n{encouragement}"
+    result = f"{encouragement}\nรู้สึก {mood} อยู่หรอ เอาเพลงนี้ไปนะ~ ❤️"
     for i, s in enumerate(songs, 1):
         result += (
             f"\n\n😽 เพลงที่ {i}:\n"
@@ -137,7 +133,7 @@ def recommend_by_artist(artist, seen_songs, limit=5):
         return f"ไม่มีเพลงของ {artist} แต่ยังมี moosy อยู่ตรงนี้น้าา 🌈"
 
     seen_songs.extend({'name': s[1], 'artists': s[2]} for s in recommended)
-    result = f"🎧 เพลงของ {artist} ที่แนะนำค้าบบบ✨:"
+    result = f"🎧 เพลงของ {artist} ที่แนะนำค้าบบบ ✨:"
     for i, s in enumerate(recommended, 1):
         result += (
             f"\n\n😽 เพลงที่ {i}:\n"

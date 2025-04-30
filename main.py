@@ -6,7 +6,7 @@ import os
 
 app = FastAPI()
 
-# --- LINE Bot API Setup ---
+# --- Connect Line OA ---
 LINE_CHANNEL_ACCESS_TOKEN = os.getenv("LINE_CHANNEL_ACCESS_TOKEN")
 line_bot_api = LineBotApi(LINE_CHANNEL_ACCESS_TOKEN)
 
@@ -20,24 +20,19 @@ async def webhook(req: Request):
             user_message = event["message"]["text"]
             reply_token = event["replyToken"]
 
-            # ตรวจสอบการขอเพลงจากศิลปิน
             if "ขอเพลงของ" in user_message:
                 artist = user_message.split("ขอเพลงของ")[-1].strip()
                 reply_text = recommend_by_artist(artist, [], limit=5)
 
-            # ตรวจสอบการขอเพลงไทย
             elif "ขอเพลงไทย" in user_message.lower():
                 reply_text = recommend_thai([], limit=5)
 
-            # ตรวจสอบการขอเพลงตามอารมณ์หรือแนวเพลง
-            elif "ขอเพลง" in user_message.lower() or "แนะนำเพลง" in user_message.lower():
+            elif any(kw in user_message.lower() for kw in ["ขอเพลง", "แนะนำเพลง", "ขอเพลงแนว", "ขอเพลงรัก"]):
                 reply_text = recommend_by_mood(user_message, [], limit=5)
 
-            # หากไม่ตรงกับเงื่อนไขข้างต้น ให้ไปทำตาม mood
             else:
                 reply_text = recommend_by_mood(user_message, [], limit=5)
 
-            # ส่งข้อความกลับ
             line_bot_api.reply_message(
                 reply_token,
                 TextSendMessage(text=reply_text)
