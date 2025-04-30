@@ -11,6 +11,8 @@ from googletrans import Translator
 
 # --- Setup ---
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+gemini = genai.GenerativeModel("gemini-1.5-pro-latest")
+
 embedder = SentenceTransformer('all-MiniLM-L6-v2')
 translator = Translator()
 
@@ -70,17 +72,14 @@ def get_encouragement(mood):
     """
 
     try:
-        response = genai.generate_content(prompt) 
+        response = gemini.generate_content(prompt) 
         encouragement = f"✨ {response.text.strip()} ✨"
     except Exception as e:
         print(f"Error occurred: {e}")
-        encouragement = "moosy เป็นกำลังใจให้นะคะ ✨"
+        encouragement = "✨moosy เป็นกำลังใจให้นะคะ ✨"
 
-    
     encouragement_cache[mood] = encouragement
     return encouragement
-
-
 
 def find_similar_moods(current_mood, top_n=3):
     idx = mood_list.index(current_mood)
