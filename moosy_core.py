@@ -123,7 +123,6 @@ def recommend_by_mood(text, seen_songs, limit=5):
         )
     return result
 
-
 def recommend_by_artist(artist, seen_songs, limit=5):
     artist = safe_lower(artist)
     songs = df[df['artists'].notna() & df['artists'].str.lower().str.contains(artist)]
