@@ -20,6 +20,10 @@ async def webhook(req: Request):
             user_message = event["message"]["text"]
             reply_token = event["replyToken"]
 
+            # ✅ ข้ามการประมวลผลถ้าเป็น "วิธีใช้"
+            if "วิธีใช้" in user_message.lower():
+                continue
+
             if "ขอเพลงของ" in user_message:
                 artist = user_message.split("ขอเพลงของ")[-1].strip()
                 reply_text = recommend_by_artist(artist, [], limit=5)

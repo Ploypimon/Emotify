@@ -94,6 +94,32 @@ def recommend_songs(df_subset, seen_songs, limit=5):
     return random.sample(available_songs, min(limit, len(available_songs)))
 
 def recommend_by_mood(text, seen_songs, limit=5):
+    original_text = text.strip().lower()
+
+    # ถ้าผู้ใช้พิมพ์ว่า "แนะนำเพลง" หรือ "ขอเพลง" เฉย ๆ
+    if original_text in ["แนะนำเพลง", "ขอเพลง"]:
+        mood = random.choice(mood_list)
+        encouragement = get_encouragement(mood)
+
+        # แนะนำจาก mood สุ่มโดยไม่สน similarity
+        candidates = df[df['mood'].str.lower() == mood.lower()]
+        songs = recommend_songs(candidates, seen_songs, limit)
+
+        if not songs:
+            return f"เพลงแนว {mood} ตอนนี้หมดแล้วงับ แต่ moosy อยู่ตรงนี้เสมอน้า 🥹"
+
+        seen_songs.extend({'name': s[1], 'artists': s[2]} for s in songs)
+        result = f"{encouragement}\nสุ่มเพลงพิเศษจาก moosy มาให้แล้วน้า~ 🐾"
+        for i, s in enumerate(songs, 1):
+            result += (
+                f"\n\n😽 เพลงที่ {i}:\n"
+                f"🌻 Name: {s[1]}\n"
+                f"🎤 Artist: {s[2]}\n"
+                f"🎹 Key: {key_map.get(s[10], 'Unknown')},🎼 Tempo: {s[16]} BPM\n"
+                f"🎧 ฟังได้ที่: {s[17]}"
+            )
+        return result
+    
     mood, similarity = match_mood(text)
     encouragement = get_encouragement(mood)
 
